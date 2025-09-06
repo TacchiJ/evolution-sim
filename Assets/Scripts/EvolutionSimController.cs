@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 public class EvolutionSimController : MonoBehaviour
@@ -14,6 +15,12 @@ public class EvolutionSimController : MonoBehaviour
     public GameObject creaturePrefab;     // Prefab with BrainScript
     public Transform creaturesParent;
     public Transform meshParentObject;
+
+    [Header("Initial Generation")]
+    [Tooltip("If true, first epoch will be initialized from saved weights.")]
+    public bool loadFirstEpochFromSave = false;
+    public string saveFilePath = "SavedWeights.json";
+    public string loadFilePath = "SavedWeights.json";
 
     [Header("Evolution Settings")]
     [Range(0f, 1f)]
@@ -34,6 +41,13 @@ public class EvolutionSimController : MonoBehaviour
     private void Start()
     {
         CacheSpawnMeshes();
+
+        // Load weights if requested
+        if (loadFirstEpochFromSave && File.Exists(saveFilePath))
+        {
+            LoadWeightsFromFile(loadFilePath);
+        }
+
         StartEpoch();
     }
 
@@ -78,11 +92,18 @@ public class EvolutionSimController : MonoBehaviour
             GameObject c = Instantiate(creaturePrefab, pos, Quaternion.identity, creaturesParent);
             BrainScript brainScript = c.GetComponent<BrainScript>();
 
-            if (previousGenWeights.Count > 0)
+            // Only mutate weights if previous generation exists AND this is NOT the first epoch loaded from file
+            if (previousGenWeights.Count > 0 && agesThisEpoch.Count > 0)
             {
                 float[] parentWeights = SelectParent();
                 float[] childWeights = MutateWeights(parentWeights);
                 brainScript.SetWeights(childWeights);
+            }
+            else if (previousGenWeights.Count > 0)
+            {
+                // Use the loaded weights directly, without selecting parents
+                int idx = Random.Range(0, previousGenWeights.Count);
+                brainScript.SetWeights(previousGenWeights[idx]);
             }
 
             placedPositions.Add(pos);
@@ -164,6 +185,8 @@ public class EvolutionSimController : MonoBehaviour
 
         Debug.Log($"Epoch {currentEpoch + 1} ended. Max age: {maxAge:F2}, Mean age: {meanAge:F2}");
 
+        SaveWeightsSortedByAge();
+
         currentEpoch++;
         if (currentEpoch < epochs)
         {
@@ -177,6 +200,46 @@ public class EvolutionSimController : MonoBehaviour
         {
             Debug.Log("Simulation complete!");
         }
+    }
+
+    private void SaveWeightsSortedByAge()
+    {
+        // Pair ages with weights
+        List<(float age, float[] weights)> scored = new List<(float, float[])>();
+        for (int i = 0; i < agesThisEpoch.Count; i++)
+        {
+            scored.Add((agesThisEpoch[i], previousGenWeights[i]));
+        }
+
+        // Sort descending by age
+        scored.Sort((a, b) => b.age.CompareTo(a.age));
+
+        // Convert to serializable format
+        List<string> serialized = new List<string>();
+        foreach (var s in scored)
+        {
+            string line = string.Join(",", s.weights);
+            serialized.Add(line);
+        }
+
+        File.WriteAllLines(saveFilePath, serialized.ToArray());
+        // Debug.Log($"Saved weights for epoch {currentEpoch + 1} to {saveFilePath}");
+    }
+
+    private void LoadWeightsFromFile(string path)
+    {
+        previousGenWeights.Clear();
+        string[] lines = File.ReadAllLines(path);
+        foreach (string line in lines)
+        {
+            string[] tokens = line.Split(',');
+            float[] weights = new float[tokens.Length];
+            for (int i = 0; i < tokens.Length; i++)
+                weights[i] = float.Parse(tokens[i]);
+            previousGenWeights.Add(weights);
+        }
+
+        Debug.Log($"Loaded {previousGenWeights.Count} weight sets from {path}");
     }
 
     /// <summary>
