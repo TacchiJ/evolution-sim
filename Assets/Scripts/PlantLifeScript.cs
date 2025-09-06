@@ -10,7 +10,7 @@ public class PlantLife : MonoBehaviour
     [Range(0f, 1f)] public float idealTemperatureMin = 10f;
     [Range(0f, 1f)] public float idealTemperatureMax = 25f;
     [Range(0f, 10f)] public float outsideTemperatureMortalityRate = 3f;
-    [Range(0f, 5f)] public float nutritionalScore = 5f;    
+    [Range(0f, 10f)] public float nutritionalScore = 5f;    
 
     [Header("Runtime Info")]
     public float age = 0f;
@@ -39,6 +39,11 @@ public class PlantLife : MonoBehaviour
         {
             Destroy(gameObject);
         }
+    }
+
+    public float GetNutritionalScore()
+    {
+        return nutritionalScore;
     }
 
 }

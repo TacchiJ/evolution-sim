@@ -10,9 +10,12 @@ public class PerlinSurfaceGenerator : MonoBehaviour
     [Header("Mesh Settings")]
     public MeshRenderer meshRenderer;
     public Transform tileParent;
+    public int parentLayer;
     public bool LockSizeShape = true;
     [Range(2, 200)] public int WidthX = 50;
     [Range(2, 200)] public int WidthY = 50;
+
+    public MeshCollider meshCollider;
 
     [Header("Perlin Noise Settings")]
     [Range(0.1f, 50f)] public float PerlinNoiseScale = 10f;
@@ -37,6 +40,14 @@ public class PerlinSurfaceGenerator : MonoBehaviour
         [Range(0f, 1f)]
         public float Position = 0f;
         public Color Color = Color.white;
+    }
+
+    private void Awake()
+    {
+        parentLayer = gameObject.layer;
+        meshCollider = GetComponent<MeshCollider>();
+        if (meshCollider == null)
+            meshCollider = gameObject.AddComponent<MeshCollider>();
     }
 
 
@@ -169,11 +180,14 @@ public class PerlinSurfaceGenerator : MonoBehaviour
             Destroy(tileParent.GetChild(i).gameObject);
         }
 
-    // Create the 4 tiles
-    CreateTile("Tile_Original", Vector3.zero, Vector3.one);
-    CreateTile("Tile_FlipX", new Vector3(0, 0, 0), new Vector3(-1, 1, 1));
-    CreateTile("Tile_FlipY", new Vector3(0, 0, 0), new Vector3(1, 1, -1));
-    CreateTile("Tile_FlipXY", new Vector3(0, 0, 0), new Vector3(-1, 1, -1));
+        // Create the 4 tiles
+        CreateTile("Tile_Original", Vector3.zero, Vector3.one);
+        CreateTile("Tile_FlipX", new Vector3(0, 0, 0), new Vector3(-1, 1, 1));
+        CreateTile("Tile_FlipY", new Vector3(0, 0, 0), new Vector3(1, 1, -1));
+        CreateTile("Tile_FlipXY", new Vector3(0, 0, 0), new Vector3(-1, 1, -1));
+
+        // Now combine meshes for collider
+        CombineTilesForCollider();
     }
 
     private void CreateTile(string name, Vector3 position, Vector3 scale)
@@ -184,12 +198,36 @@ public class PerlinSurfaceGenerator : MonoBehaviour
         child.transform.localRotation = Quaternion.identity;
         child.transform.localScale = scale;
 
+        child.layer = parentLayer;
+
         MeshFilter mf = child.AddComponent<MeshFilter>();
         MeshRenderer mr = child.AddComponent<MeshRenderer>();
 
         // Share the same mesh/material (faster, less memory)
         mf.sharedMesh = mesh;
         mr.sharedMaterials = GetComponent<MeshRenderer>().sharedMaterials;
+    }
+
+    private void CombineTilesForCollider()
+    {
+        MeshFilter[] meshFilters = tileParent.GetComponentsInChildren<MeshFilter>();
+
+        List<CombineInstance> combine = new List<CombineInstance>();
+        foreach (MeshFilter mf in meshFilters)
+        {
+            CombineInstance ci = new CombineInstance();
+            ci.mesh = mf.sharedMesh;
+            ci.transform = mf.transform.localToWorldMatrix;
+            combine.Add(ci);
+        }
+
+        Mesh combinedMesh = new Mesh();
+        combinedMesh.name = "CombinedColliderMesh";
+        combinedMesh.CombineMeshes(combine.ToArray());
+
+        // Update parent MeshCollider
+        meshCollider.sharedMesh = null; // force refresh
+        meshCollider.sharedMesh = combinedMesh;
     }
 
 }

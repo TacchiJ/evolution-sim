@@ -12,6 +12,7 @@ public class WaveWaterGenerator : MonoBehaviour
     public bool LockSizeShape = true;
     [Range(2, 200)] public int WidthX = 50;
     [Range(2, 200)] public int WidthY = 50;
+    private MeshCollider meshCollider;
 
     [Header("Wave Settings")]
     public TemperatureControllerScript temperatureController;
@@ -36,6 +37,13 @@ public class WaveWaterGenerator : MonoBehaviour
         [Range(0f, 1f)]
         public float Position = 0f;
         public Color Color = Color.white;
+    }
+
+    private void Awake()
+    {
+        meshCollider = GetComponent<MeshCollider>();
+        if (meshCollider == null)
+            meshCollider = gameObject.AddComponent<MeshCollider>();
     }
 
     private void Update()
@@ -115,6 +123,12 @@ public class WaveWaterGenerator : MonoBehaviour
 
         GetComponent<MeshFilter>().sharedMesh = mesh;
         ApplyVertexColors(vertices);
+
+        if (meshCollider != null)
+        {
+            meshCollider.sharedMesh = null;  // Clear first to force update
+            meshCollider.sharedMesh = mesh;
+        }
 
         if (Application.isPlaying)
         {
