@@ -34,13 +34,16 @@ public class AnimalInternalState : MonoBehaviour
 
     void Update()
     {
+        // Scale changes by simulation speed
+        float scaledDelta = Time.deltaTime * Time.timeScale;
+
         // Increase age
-        age += Time.deltaTime;
+        age += scaledDelta;
 
         // FOOD
         // Decrease hunger and thirst
-        hunger -= hungerDecreaseRate * Time.deltaTime;
-        thirst -= thirstDecreaseRate * Time.deltaTime;
+        hunger -= hungerDecreaseRate * scaledDelta;
+        thirst -= thirstDecreaseRate * scaledDelta;
 
         // WATER
         // Check for water using raycasts
@@ -49,7 +52,7 @@ public class AnimalInternalState : MonoBehaviour
         // Restore thirst if in water
         if (isInWater)
         {
-            Drink(1f * Time.deltaTime);
+            Drink(1f * scaledDelta);
         }
 
         // Clamp values between 0 and 1
