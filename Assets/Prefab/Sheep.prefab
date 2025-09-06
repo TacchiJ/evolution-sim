@@ -924,10 +924,10 @@ MonoBehaviour:
   backwardsSpeedMultiplier: 0.3
   turnSpeed: 120
   raycastDistance: 2
-  minX: -74.5
-  maxX: 74.5
-  minZ: -74.5
-  maxZ: 74.5
+  minX: -199.5
+  maxX: 199.5
+  minZ: -199.5
+  maxZ: 199.5
   bodyTransform: {fileID: 1401629101619958691}
   bodyRotationOffset: {x: 0, y: -90, z: 0}
   horizontal: 0

@@ -10,8 +10,8 @@ public class WaveWaterGenerator : MonoBehaviour
     public MeshRenderer meshRenderer;
     public Transform tileParent;
     public bool LockSizeShape = true;
-    [Range(2, 200)] public int WidthX = 50;
-    [Range(2, 200)] public int WidthY = 50;
+    [Range(2, 1000)] public int WidthX = 50;
+    [Range(2, 1000)] public int WidthY = 50;
     private MeshCollider meshCollider;
 
     [Header("Wave Settings")]

@@ -3,11 +3,17 @@ using UnityEngine;
 
 public class EvolutionSimController : MonoBehaviour
 {
+    [Header("Simulation Speed")]
+    [Tooltip("Multiplier for simulation speed (1 = normal, 2 = double, etc.)")]
+    [Range(0f, 10f)]
+    public float simulationSpeed = 1f;
+
     [Header("Simulation Settings")]
     public int epochs = 10;
     public int creaturesPerEpoch = 20;
     public GameObject creaturePrefab;     // Prefab with BrainScript
     public Transform creaturesParent;
+    public Transform meshParentObject;
 
     [Header("Evolution Settings")]
     [Range(0f, 1f)]
@@ -19,12 +25,34 @@ public class EvolutionSimController : MonoBehaviour
     private int deathsThisEpoch = 0;
     private List<float> agesThisEpoch = new List<float>();
 
+    private List<Mesh> spawnMeshes = new List<Mesh>();
+    private List<Matrix4x4> spawnMatrices = new List<Matrix4x4>();
+
     // Store all neural networks for selection
     private List<float[]> previousGenWeights = new List<float[]>();
 
     private void Start()
     {
+        CacheSpawnMeshes();
         StartEpoch();
+    }
+
+    private void Update()
+    {
+        Time.timeScale = simulationSpeed;
+    }
+
+    private void CacheSpawnMeshes()
+    {
+        spawnMeshes.Clear();
+        spawnMatrices.Clear();
+
+        MeshFilter[] filters = meshParentObject.GetComponentsInChildren<MeshFilter>();
+        foreach (MeshFilter mf in filters)
+        {
+            spawnMeshes.Add(mf.sharedMesh);
+            spawnMatrices.Add(mf.transform.localToWorldMatrix);
+        }
     }
 
     private void StartEpoch()
@@ -32,25 +60,74 @@ public class EvolutionSimController : MonoBehaviour
         deathsThisEpoch = 0;
         agesThisEpoch.Clear();
 
+        foreach (Transform child in creaturesParent)
+            Destroy(child.gameObject);
+
+        List<Vector3> placedPositions = new List<Vector3>();
+
         // Spawn creatures
         for (int i = 0; i < creaturesPerEpoch; i++)
         {
-            GameObject c = Instantiate(creaturePrefab, creaturesParent);
+            Vector3 pos = FindSpawnPosition(placedPositions);
+            if (pos == Vector3.negativeInfinity)
+            {
+                Debug.LogWarning("Could not find valid spawn position for creature!");
+                continue;
+            }
+
+            GameObject c = Instantiate(creaturePrefab, pos, Quaternion.identity, creaturesParent);
             BrainScript brainScript = c.GetComponent<BrainScript>();
 
-            // Assign random or inherited weights
-            if (previousGenWeights.Count == 0)
+            if (previousGenWeights.Count > 0)
             {
-                // First generation, random weights already in BrainScript
-            }
-            else
-            {
-                // Select parent probabilistically by age
                 float[] parentWeights = SelectParent();
                 float[] childWeights = MutateWeights(parentWeights);
-                brainScript.brain.SetWeights(childWeights);
+                brainScript.SetWeights(childWeights);
             }
+
+            placedPositions.Add(pos);
         }
+    }
+
+    private Vector3 FindSpawnPosition(List<Vector3> placed)
+    {
+        for (int attempt = 0; attempt < 100; attempt++)
+        {
+            // Pick random mesh
+            int mIndex = Random.Range(0, spawnMeshes.Count);
+            Mesh mesh = spawnMeshes[mIndex];
+            Matrix4x4 matrix = spawnMatrices[mIndex];
+
+            // Pick random triangle
+            int[] tris = mesh.triangles;
+            int t = Random.Range(0, tris.Length / 3) * 3;
+            Vector3 v0 = matrix.MultiplyPoint3x4(mesh.vertices[tris[t]]);
+            Vector3 v1 = matrix.MultiplyPoint3x4(mesh.vertices[tris[t + 1]]);
+            Vector3 v2 = matrix.MultiplyPoint3x4(mesh.vertices[tris[t + 2]]);
+
+            // Barycentric random point
+            float r1 = Mathf.Sqrt(Random.value);
+            float r2 = Random.value;
+            Vector3 point = (1 - r1) * v0 + (r1 * (1 - r2)) * v1 + (r1 * r2) * v2;
+
+            // Y offset
+            point += Vector3.up * 1f;
+
+            // Check distance from already placed
+            bool valid = true;
+            foreach (Vector3 p in placed)
+            {
+                if (Vector3.Distance(p, point) < 2f)
+                {
+                    valid = false;
+                    break;
+                }
+            }
+
+            if (valid) return point;
+        }
+
+        return Vector3.negativeInfinity; // fail
     }
 
     /// <summary>
@@ -103,31 +180,37 @@ public class EvolutionSimController : MonoBehaviour
     }
 
     /// <summary>
-    /// Select a parent weight set probabilistically, weighted by age (longer living = more likely)
+    /// Select a parent weight set from the top 50% of creatures,
+    /// with a ~90% chance to pick from the top 10%.
     /// </summary>
     private float[] SelectParent()
     {
-        // Compute cumulative sum of ages
-        float totalAge = 0f;
-        foreach (float a in agesThisEpoch)
-            totalAge += a;
-
-        // Pick a random value
-        float r = Random.Range(0f, totalAge);
-        float sum = 0f;
-        int index = 0;
+        // Pair up ages with weights
+        List<(float age, float[] weights)> scored = new List<(float, float[])>();
         for (int i = 0; i < agesThisEpoch.Count; i++)
         {
-            sum += agesThisEpoch[i];
-            if (r <= sum)
-            {
-                index = i;
-                break;
-            }
+            scored.Add((agesThisEpoch[i], previousGenWeights[i]));
         }
 
-        // Return weights from chosen parent
-        return previousGenWeights[index];
+        // Sort descending by age (best first)
+        scored.Sort((a, b) => b.age.CompareTo(a.age));
+
+        int count = scored.Count;
+        int cutoff = count / 2; // only top 50% survive
+        int top10 = Mathf.Max(1, count / 10); // top 10%
+
+        // 90% chance pick from top 10%
+        if (Random.value < 0.9f)
+        {
+            int idx = Random.Range(0, top10);
+            return scored[idx].weights;
+        }
+        else
+        {
+            // 10% chance pick randomly from rest of top 50% (excluding top 10% already handled)
+            int idx = Random.Range(top10, cutoff);
+            return scored[idx].weights;
+        }
     }
 
     /// <summary>

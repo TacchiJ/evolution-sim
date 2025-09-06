@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Rendering; 
 using UnityEditor;
 using System.Collections.Generic;
 
@@ -73,7 +74,8 @@ public class PerlinSurfaceGenerator : MonoBehaviour
     {
         if (mesh == null) mesh = new Mesh();
         else mesh.Clear();
-        
+
+        mesh.indexFormat = IndexFormat.UInt32;
         mesh.name = "Procedural Surface";
 
         Vector3[] vertices = new Vector3[(WidthX + 1) * (WidthY + 1)];
@@ -222,6 +224,7 @@ public class PerlinSurfaceGenerator : MonoBehaviour
         }
 
         Mesh combinedMesh = new Mesh();
+        combinedMesh.indexFormat = IndexFormat.UInt32;
         combinedMesh.name = "CombinedColliderMesh";
         combinedMesh.CombineMeshes(combine.ToArray());
 
