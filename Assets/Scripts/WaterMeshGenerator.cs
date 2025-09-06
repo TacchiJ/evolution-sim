@@ -16,6 +16,7 @@ public class WaveWaterGenerator : MonoBehaviour
 
     [Header("Wave Settings")]
     public TemperatureControllerScript temperatureController;
+    public int waterLabel;
     private float waterPosition = 0f;
     [Range(0f, 20f)] public float LoopsX = 1f;
     [Range(0f, 20f)] public float LoopsY = 1f;
@@ -196,6 +197,8 @@ public class WaveWaterGenerator : MonoBehaviour
         child.transform.localPosition = position;
         child.transform.localRotation = Quaternion.identity;
         child.transform.localScale = scale;
+
+        child.layer = waterLabel;
 
         MeshFilter mf = child.AddComponent<MeshFilter>();
         MeshRenderer mr = child.AddComponent<MeshRenderer>();

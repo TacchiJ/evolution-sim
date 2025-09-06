@@ -71,7 +71,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   temperatureController: {fileID: 0}
-  lifeExpectancy: 50
+  lifeExpectancy: 70
   idealTemperatureMin: 0.1
   idealTemperatureMax: 0.4
   outsideTemperatureMortalityRate: 3
@@ -267,7 +267,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3

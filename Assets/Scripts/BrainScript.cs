@@ -57,6 +57,17 @@ public class BrainScript : MonoBehaviour
         CreatureMovementScript.SetHorizontal(movementX);
         CreatureMovementScript.SetVertical(movementY);
     }
+    
+    // --- Evolution passthrough ---
+    public float[] GetWeights()
+    {
+        return brain.GetWeights();
+    }
+
+    public void SetWeights(float[] newWeights)
+    {
+        brain.SetWeights(newWeights);
+    }
 
     /// <summary>
     /// Converts a raw vision list [dist1, layer1, dist2, layer2, ...] 

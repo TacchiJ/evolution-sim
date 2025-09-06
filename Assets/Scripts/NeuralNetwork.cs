@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+
 
 public class NeuralNetwork
 {
@@ -127,4 +129,56 @@ public class NeuralNetwork
         return Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Sin(2.0 * Math.PI * u2);
     }
     #endregion
+
+    // --- Weight management for evolution ---
+    public float[] GetWeights()
+    {
+        List<float> weights = new List<float>();
+
+        // Flatten each weight matrix and bias vector
+        Flatten(W_v1, weights); weights.AddRange(b_v1);
+        Flatten(W_v2, weights); weights.AddRange(b_v2);
+        Flatten(W_h, weights);  weights.AddRange(b_h);
+        Flatten(W_merge, weights); weights.AddRange(b_merge);
+        Flatten(W_out, weights); weights.AddRange(b_out);
+
+        return weights.ToArray();
+    }
+
+    public void SetWeights(float[] flatWeights)
+    {
+        int index = 0;
+
+        index = Unflatten(W_v1, b_v1, flatWeights, index);
+        index = Unflatten(W_v2, b_v2, flatWeights, index);
+        index = Unflatten(W_h, b_h, flatWeights, index);
+        index = Unflatten(W_merge, b_merge, flatWeights, index);
+        index = Unflatten(W_out, b_out, flatWeights, index);
+    }
+
+    // --- Helpers ---
+    private void Flatten(float[,] matrix, List<float> list)
+    {
+        int rows = matrix.GetLength(0);
+        int cols = matrix.GetLength(1);
+        for (int i = 0; i < rows; i++)
+            for (int j = 0; j < cols; j++)
+                list.Add(matrix[i, j]);
+    }
+
+    private int Unflatten(float[,] matrix, float[] bias, float[] flat, int index)
+    {
+        int rows = matrix.GetLength(0);
+        int cols = matrix.GetLength(1);
+
+        for (int i = 0; i < rows; i++)
+            for (int j = 0; j < cols; j++)
+                matrix[i, j] = flat[index++];
+
+        for (int i = 0; i < bias.Length; i++)
+            bias[i] = flat[index++];
+
+        return index;
+    }
+
 }
