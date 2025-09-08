@@ -102,4 +102,4 @@ InitTestScene*.unity*
 /Assets/Thirdparty*
 
 # Ignore weights (usually too large)
-/SavedWeights.json
+/SavedWeights.csv
