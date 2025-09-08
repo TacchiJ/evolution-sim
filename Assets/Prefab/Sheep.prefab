@@ -111,7 +111,7 @@ Transform:
   m_GameObject: {fileID: 827085749896445867}
   serializedVersion: 2
   m_LocalRotation: {x: 0.08715578, y: 0, z: 0, w: 0.9961947}
-  m_LocalPosition: {x: 0, y: 0.4, z: 0.9}
+  m_LocalPosition: {x: 0, y: 0.4, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -894,8 +894,8 @@ MonoBehaviour:
   CreatureMovementScript: {fileID: 8151722092125370753}
   BrainScript: {fileID: 5063378959825879246}
   EvolutionSimController: {fileID: 0}
-  hungerDecreaseRate: 0.02
-  thirstDecreaseRate: 0.02
+  hungerDecreaseRate: 0.035
+  thirstDecreaseRate: 0.035
   age: 0
   hunger: 1
   thirst: 1
