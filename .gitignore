@@ -100,3 +100,6 @@ InitTestScene*.unity*
 
 # Third party Assets
 /Assets/Thirdparty*
+
+# Ignore weights (usually too large)
+/SavedWeights.json
