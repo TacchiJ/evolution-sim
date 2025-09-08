@@ -71,11 +71,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   temperatureController: {fileID: 0}
-  lifeExpectancy: 70
+  lifeExpectancy: 90
   idealTemperatureMin: 0.1
   idealTemperatureMax: 0.4
-  outsideTemperatureMortalityRate: 3
-  nutritionalScore: 1
+  outsideTemperatureMortalityRate: 1
+  nutritionalScore: 3
   age: 0
   currentTemperature: 0
   isInIdealRange: 1

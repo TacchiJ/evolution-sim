@@ -43,6 +43,7 @@ public class PlantLife : MonoBehaviour
 
     public float GetNutritionalScore()
     {
+        age = lifeExpectancy; // Force plant to die after being eaten
         return nutritionalScore;
     }
 

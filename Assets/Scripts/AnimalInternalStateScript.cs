@@ -61,11 +61,19 @@ public class AnimalInternalState : MonoBehaviour
 
         // DEATH
         // Destroy animal if hunger or thirst reaches 0
-        if (hunger <= 0f || thirst <= 0f)
+        if (thirst <= 0f)
         {
             if (!CreatureMovementScript.controlledByHuman)
             {
-                EvolutionSimController.CreatureDied(age, BrainScript.brain.GetWeights());
+                EvolutionSimController.CreatureDied(age, BrainScript.brain.GetWeights(), "thirst");
+                Destroy(gameObject);
+            }
+        }
+        else if (hunger <= 0f)
+        {
+            if (!CreatureMovementScript.controlledByHuman)
+            {
+                EvolutionSimController.CreatureDied(age, BrainScript.brain.GetWeights(), "hunger");
                 Destroy(gameObject);
             }
         }
@@ -93,7 +101,10 @@ public class AnimalInternalState : MonoBehaviour
     public float GetHunger() => hunger;
     public float GetThirst() => thirst;
 
-    public void Eat(float amount) => hunger = Mathf.Clamp01(hunger + amount);
+    public void Eat(float amount) {
+        hunger = Mathf.Clamp01(hunger + amount);
+        age += 5f;
+    }
     public void Drink(float amount) => thirst = Mathf.Clamp01(thirst + amount);
 
     // Trigger detection for food and water

@@ -35,6 +35,9 @@ public class PlantSpawnerOnTiles : MonoBehaviour
         if (prefabToSpawn == null || tileParent == null)
             return;
 
+        // Clean up null entries (destroyed plants)
+        spawnedObjects.RemoveAll(obj => obj == null);
+
         timer += Time.deltaTime;
         if (timer >= spawnTimeInterval)
         {

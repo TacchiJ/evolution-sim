@@ -8,15 +8,14 @@ public class NeuralNetwork
     private int visionInputSize = 1085;
     private int hungerThirstSize = 2;
 
-    private int visionHidden1 = 128;
-    private int visionHidden2 = 64;
-    private int hungerHidden = 16;
-    private int mergedHidden = 64;
+    private int visionHidden1 = 64;
+    private int visionHidden2 = 32;
+    private int hungerHidden = 8;
+    private int mergedHidden = 16;
     private int outputSize = 2;
 
     // Weights and biases
-    private float[,] W_v1, W_v2, W_h;
-    private float[,] W_merge, W_out;
+    private float[,] W_v1, W_v2, W_h, W_merge, W_out;
     private float[] b_v1, b_v2, b_h, b_merge, b_out;
 
     private Random rnd = new Random();
@@ -45,18 +44,18 @@ public class NeuralNetwork
     public float[] Forward(float[] visionInput, float[] hungerThirstInput)
     {
         // Vision stream
-        float[] v1 = ReLU(Add(MatMul(visionInput, W_v1), b_v1));
-        float[] v2 = ReLU(Add(MatMul(v1, W_v2), b_v2));
+        float[] v1 = LeakyReLU(Add(MatMul(visionInput, W_v1), b_v1));
+        float[] v2 = LeakyReLU(Add(MatMul(v1, W_v2), b_v2));
 
         // Hunger/Thirst stream
-        float[] h = ReLU(Add(MatMul(hungerThirstInput, W_h), b_h));
+        float[] h = LeakyReLU(Add(MatMul(hungerThirstInput, W_h), b_h));
 
         // Merge
         float[] merged = new float[v2.Length + h.Length];
         Array.Copy(v2, 0, merged, 0, v2.Length);
         Array.Copy(h, 0, merged, v2.Length, h.Length);
 
-        float[] mergedOut = ReLU(Add(MatMul(merged, W_merge), b_merge));
+        float[] mergedOut = LeakyReLU(Add(MatMul(merged, W_merge), b_merge));
 
         // Output
         float[] output = Tanh(Add(MatMul(mergedOut, W_out), b_out));
@@ -111,6 +110,14 @@ public class NeuralNetwork
     {
         float[] y = new float[x.Length];
         for (int i = 0; i < x.Length; i++) y[i] = Math.Max(0, x[i]);
+        return y;
+    }
+
+    private float[] LeakyReLU(float[] x, float alpha = 0.01f)
+    {
+        float[] y = new float[x.Length];
+        for (int i = 0; i < x.Length; i++)
+            y[i] = x[i] > 0 ? x[i] : alpha * x[i];
         return y;
     }
 

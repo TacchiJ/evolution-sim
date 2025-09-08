@@ -83,15 +83,25 @@ public class CreatureMovementBounded : MonoBehaviour
             Vector3 projectedMove = Vector3.ProjectOnPlane(move, hit.normal);
             Vector3 newPosition = rb.position + projectedMove;
 
-            // Clamp position to bounding box
-            newPosition.x = Mathf.Clamp(newPosition.x, minX, maxX);
-            newPosition.z = Mathf.Clamp(newPosition.z, minZ, maxZ);
+            bool teleported = false;
+
+            // Wrap-around teleport logic with slight nudge
+            float nudge = 0.1f; // inside the boundary
+
+            if (newPosition.x > maxX) { newPosition.x = minX + nudge; teleported = true; }
+            else if (newPosition.x < minX) { newPosition.x = maxX - nudge; teleported = true; }
+
+            if (newPosition.z > maxZ) { newPosition.z = minZ + nudge; teleported = true; }
+            else if (newPosition.z < minZ) { newPosition.z = maxZ - nudge; teleported = true; }
+
+            // Only apply Y offset if creature teleported
+            if (teleported)
+            {
+                newPosition.y += 3f;
+            }
 
             rb.MovePosition(newPosition);
         }
-        else
-        {
-            // Falling (no land below), movement blocked horizontally
-        }
     }
+
 }
