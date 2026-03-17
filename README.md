@@ -26,3 +26,9 @@ A Unity-based simulation of evolving creatures in a dynamic environment. Creatur
 
 - Neural network weights are saved and loaded as CSV files for persistent evolution.
 - The folder 'BackupWeights' contains some pre-trained weights that can be loaded into the project by setting the "Load File Path" in the Evolution Sim Controller in Scene.
+
+## Image
+
+Behold, a mighty flock of sheep frolicking in their 3D environment!
+
+![Sheep frolicking](Images/sheep_frolicking.png)
