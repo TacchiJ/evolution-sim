@@ -36,4 +36,4 @@ Behold, a mighty flock of sheep frolicking in their 3D environment!
 
 Here is an image of a sheep's "vision", using raycasts.
 
-<img src="Images/sheep_vision.png" alt="Sheep vision" width="60.7%" />
+![Sheep frolicking](Images/sheep_vision.png)
