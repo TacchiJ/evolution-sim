@@ -5,7 +5,7 @@ using System.Collections.Generic;
 public class NeuralNetwork
 {
     // Layer sizes
-    private int visionInputSize = 1085;
+    private int visionInputSize = 1085;  // 31 XRayCasts * 5 YRayCasts * 7 (dist + 6 types) = 1085
     private int hungerThirstSize = 2;
 
     private int visionHidden1 = 64;
